@@ -24,7 +24,7 @@ category_map = df.groupby('Category')['Exercise'].unique().to_dict()
 categories = sorted(list(category_map.keys()))
 
 while True:
-    print("\n" + "="*45 + "\nAUTONOMOUS COACH v8.1 (SEQUENTIAL)\n" + "="*45)
+    print("\n" + "\nAutonomous AI Workout Model\n")
     for i, cat in enumerate(categories, 1): print(f"{i}. {cat}")
     print("0. Exit")
     
@@ -82,7 +82,7 @@ while True:
 
             # 3. Output Recommendation
             print(f"\n" + "*"*30)
-            print(f"COACH SAYS: {selected_ex.upper()}")
+            print(f"Selected: {selected_ex.upper()}")
             print(f"*"*30)
             print(f"SET GOAL: 3 Sets x {target_r} Reps")
             print(f"WEIGHT  : {target_w} lbs")
