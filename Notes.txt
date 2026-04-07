@@ -24,3 +24,16 @@ model.fit = run the training
     2. calculate mean squared error
     3. work from output backwords using calculus to reduce mean squared error
     4. adjust the weights, run next epoch
+
+to test model, we want to test using never seen before data
+
+when a model memorizes training data instead of learning, it's Overfitting
+
+loss = Mean Squared Error
+if both training loss and test loss go down, model is learning
+if training loss drops low but test loss goes up, model is 100% Overfitting and memorizing the training
+
+To handle overfitting we have 3 things
+1. add dropout layers in which Dropout(0.2) is like 20% of layers turned off randomly to force uniform learning
+2. early stopping using keras to save the model at the best point
+3. give an absurd amount of diverse examples to the extent that memorization becomes generally impossible
