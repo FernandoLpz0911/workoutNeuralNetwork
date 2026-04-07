@@ -4,6 +4,9 @@ import numpy as np
 # loads the csv data
 df = pd.read_csv('FitNotes_Export_apr6.csv')
 
+print("Exact columns Pandas sees:", df.columns.tolist())
+df.columns = df.columns.str.strip()
+
 # Filter out non-resistance exercises
 df_clean = df.dropna(subset=['Weight', 'Reps']).copy()
 df_clean['Date'] = pd.to_datetime(df_clean['Date'])
