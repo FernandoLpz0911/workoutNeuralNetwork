@@ -1,0 +1,26 @@
+pandas = takes csv's and converts to dataframes which are great for processing
+Scikit-learn = library for traditional machine learning, and data prep
+Tensorflow = deep learning framework which essentially handles the calculus for training artificial neural networks
+Keras = Interface for Tensorflow 
+
+Visible layer = directly modified layers ie. input/output
+Hidden layer = intermediate layers
+
+Input->output = linear regression, simple connections
+input -> hidden layers -> output = regression, complex connections
+
+stacking layers not enough as it requires an activation function that breaks linearity to prevent it
+only giving answers on the extremes as it's linear with little granularity.
+
+relu is essentially the activation function in this context and only brings negative values to 0,
+does so to act like an off switch depending on context's, literally behaving like an activation switch
+
+model.compile = compiles it with a ruleset for the model
+    - optimizer = 'adam' -> Adaptive Moment Estimation = Auto-adjusts weights to improve score
+    - loss = 'mse' -> Mean Squared Error = Takes the average/mean of all squared errors, punishing huge guesses
+model.fit = run the training
+    - epochs = cycles
+    1. Runs through network
+    2. calculate mean squared error
+    3. work from output backwords using calculus to reduce mean squared error
+    4. adjust the weights, run next epoch
