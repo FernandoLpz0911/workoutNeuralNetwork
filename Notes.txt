@@ -37,3 +37,5 @@ To handle overfitting we have 3 things
 1. add dropout layers in which Dropout(0.2) is like 20% of layers turned off randomly to force uniform learning
 2. early stopping using keras to save the model at the best point
 3. give an absurd amount of diverse examples to the extent that memorization becomes generally impossible
+
+One hot encoding 
