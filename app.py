@@ -12,7 +12,7 @@ def get_weight(one_rm, reps):
 def load_assets():
     model = joblib.load('xgb_model.joblib')
     feature_cols = joblib.load('feature_cols.joblib')
-    workout_summary = pd.read_csv('Processed_Workout_Data.csv')
+    workout_summary = pd.read_csv('Processed_Workout_Data.csv', parse_dates=['Date'])
     return model, feature_cols, workout_summary
 
 st.set_page_config(page_title="AI Workout Model", layout="wide")
@@ -137,5 +137,51 @@ else:
                 st.write(f"**AI Predicted Capacity (1RM):** {pred_1rm:.1f} lbs")
                 st.write(f"**Required Capacity (1RM):** {required_1rm:.1f} lbs")
                 st.write(f"**Category Safety Buffer:** {cat_threshold * 100:.0f}%")
+            
+            st.divider()
+            st.subheader("📈 Predicted Growth Trajectory")
+            
+            with st.spinner("Calculating growth trajectory..."):
+                import datetime
+                import numpy as np
+                
+                # 1. Grab history
+                history_df = ex_data[['Date', 'Session_Max_1RM']].copy()
+                history_df = history_df.rename(columns={'Session_Max_1RM': 'Historical 1RM'})
+                history_df.set_index('Date', inplace=True)
+                
+                # 2. Calculate Linear Trend (The Math)
+                # Convert dates to numerical "days since start" so numpy can do math on them
+                first_date = ex_data['Date'].min()
+                days_since_start = (ex_data['Date'] - first_date).dt.days
+                
+                # Fit a 1st-degree polynomial (a straight line) to your historic 1RMs
+                slope, intercept = np.polyfit(days_since_start, ex_data['Session_Max_1RM'], 1)
+                
+                # 3. Project 12 weeks (3 Months) into the future
+                last_date = ex_data['Date'].max()
+                future_dates = [last_date + datetime.timedelta(days=x) for x in range(7, 91, 7)]
+                future_days_since_start = [(d - first_date).days for d in future_dates]
+                
+                # Calculate the predicted 1RM using y = mx + b
+                projected_1rms = [slope * x + intercept for x in future_days_since_start]
+                
+                # 4. Format data for Streamlit
+                proj_df = pd.DataFrame({
+                    'Date': future_dates,
+                    'Projected Trendline': projected_1rms
+                })
+                proj_df.set_index('Date', inplace=True)
+                
+                # Combine history and projection into one clean chart
+                plot_data = pd.concat([history_df, proj_df])
+                
+                # 5. Render Interactive Chart
+                st.line_chart(plot_data)
+                
+                if slope > 0:
+                    st.caption(f"Estimated Growth Rate: +{slope*7:.1f} lbs to your 1RM every week.")
+                else:
+                    st.caption("Trendline is currently flat/negative. Focus on consistency to shift the trajectory!")
         else:
             st.warning("No data found for this exercise.")
