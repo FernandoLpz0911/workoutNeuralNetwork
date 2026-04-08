@@ -82,28 +82,60 @@ else:
             sim_input = sim_input.astype(float)
             pred_1rm = model.predict(sim_input)[0]
             
-            # Decision Logic 
+            # --- THE NEW AI VALIDATION LOGIC ---
+            
+            # 1. Define Category-Specific Thresholds
+            override_thresholds = {
+                'Legs': 0.95,      # 5% leniency for heavy compounds
+                'Chest': 0.95,
+                'Back': 0.95,
+                'Shoulders': 0.90, # 10% leniency for smaller muscles
+                'Arms': 0.85       # 15% leniency for isolation
+            }
+            # Default to 0.95 if category isn't in dictionary
+            cat_threshold = override_thresholds.get(selected_cat, 0.95)
+
+            # 2. Base Decision Logic (Double Progression)
             if last_reps >= 10:
                 target_w = last_w + 2.5
                 target_r = 8
-                status = "PROGRESSION: Weight Increased"
+                base_status = "PROGRESSION: Weight Increased"
             elif last_reps < 6:
                 target_w = last_w
                 target_r = 8
-                status = "STABILIZATION: Form Focus"
+                base_status = "STABILIZATION: Form Focus"
             else:
                 target_w = last_w
                 target_r = 10
-                status = "VOLUME: Pushing for Graduation"
+                base_status = "VOLUME: Pushing for Graduation"
 
+            # 3. Apply the AI Reality Check
             if target_w == 0: 
                 target_w = round(get_weight(pred_1rm, 8) / 2.5) * 2.5
                 target_r = 8
                 status = "NEW EXERCISE: Baseline"
+            else:
+                # Mathematically, what 1RM is required to hit our Double Progression goal?
+                required_1rm = target_w * (1 + 0.0333 * target_r)
+
+                # If XGBoost predicts our capacity is below the required threshold, override!
+                if pred_1rm < (required_1rm * cat_threshold):
+                    # Recalculate target weight based safely on what the AI predicts
+                    target_w = round(get_weight(pred_1rm, target_r) / 2.5) * 2.5
+                    status = f"AI OVERRIDE: Fatigue Detected. Adjusted for safety."
+                else:
+                    status = base_status
                 
+            # Output Display
             st.divider()
             st.subheader(f"SET GOAL: 3 Sets x {target_r} Reps")
             st.metric(label="Target Weight", value=f"{target_w} lbs")
             st.info(f"STATUS: {status}")
+            
+            # Show the math for transparency
+            with st.expander("View AI Diagnostics"):
+                st.write(f"**AI Predicted Capacity (1RM):** {pred_1rm:.1f} lbs")
+                st.write(f"**Required Capacity (1RM):** {required_1rm:.1f} lbs")
+                st.write(f"**Category Safety Buffer:** {cat_threshold * 100:.0f}%")
         else:
             st.warning("No data found for this exercise.")
