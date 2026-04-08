@@ -23,7 +23,12 @@ def load_and_train_model(file):
     df_clean['Date'] = pd.to_datetime(df_clean['Date'])
     df_clean['Estimated_1RM'] = df_clean.apply(lambda x: calculate_hybrid_1rm(x['Weight'], x['Reps']), axis=1)
     
-    workout_summary = df_clean.groupby(['Date', 'Exercise', 'Category']).agg(
+    # This filters out warmups so Streamlit only averages your heaviest sets
+    idx = df_clean.groupby(['Date', 'Exercise'])['Weight'].transform('max') == df_clean['Weight']
+    working_sets = df_clean[idx]
+    
+    # Change df_clean to working_sets here!
+    workout_summary = working_sets.groupby(['Date', 'Exercise', 'Category']).agg(
         Sets=('Reps', 'count'),
         Avg_Reps=('Reps', 'mean'),
         Max_Weight=('Weight', 'max'),
@@ -46,7 +51,6 @@ def load_and_train_model(file):
     
     return model, workout_summary, list(X.columns)
 
-# --- 3. User Interface ---
 st.title("Autonomous AI Workout Model")
 
 # File Uploader
